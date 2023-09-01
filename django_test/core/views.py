@@ -1,4 +1,8 @@
+from datetime import datetime as dt
+
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.utils import timezone
 # from django.forms.models import model_to_dict
 
 from rest_framework.viewsets import ModelViewSet
@@ -11,8 +15,6 @@ from pyowm import OWM
 
 from .models import Post, Place
 from .serializers import PostSerializer, PlaceSerializer, WeatherSerializer
-
-from django.conf import settings
 
 
 class PostViewSet(ModelViewSet):
@@ -53,3 +55,24 @@ def import_weather(request, place_name):
         serializer.errors,
         status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
+
+
+@api_view(['GET'])
+def export_weather(request, place_name):
+    date_from_query = request.query_params.get('date')
+    if not date_from_query:
+        return Response(
+            'Задайте дату в формате YYYY-MM-DD',
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    date_from_query = tuple(map(int, date_from_query.split('-')))
+    place = get_object_or_404(Place, title=place_name)
+    date = dt(
+        year=date_from_query[0],
+        month=date_from_query[1],
+        day=date_from_query[2],
+        tzinfo=timezone.get_current_timezone(),
+    ).date()
+    weathers = place.weathers.filter(date__date=date)
+    serializer = WeatherSerializer(weathers, many=True)
+    return Response(serializer.data)
