@@ -2,7 +2,7 @@ from io import BytesIO
 from datetime import datetime as dt
 
 from django.http import StreamingHttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
 from django.utils import timezone
 # from django.forms.models import model_to_dict
@@ -51,7 +51,6 @@ def import_weather(request, place_name):
         place=place.id,
         author=request.user.id,
     )
-#    return Response((weather.to_dict(), data))
     serializer = WeatherSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
@@ -70,15 +69,21 @@ def export_weather(request, place_name):
             'Задайте дату в формате YYYY-MM-DD',
             status=status.HTTP_400_BAD_REQUEST
         )
-    date_from_query = tuple(map(int, date_from_query.split('-')))
+    try:
+        date_from_query = tuple(map(int, date_from_query.split('-')))
+        date = dt(
+            year=date_from_query[0],
+            month=date_from_query[1],
+            day=date_from_query[2],
+            tzinfo=timezone.get_current_timezone(),
+        ).date()
+    except Exception:
+        return Response(
+            'Задайте дату в формате YYYY-MM-DD',
+            status=status.HTTP_400_BAD_REQUEST
+        )
     place = get_object_or_404(Place, title=place_name)
-    date = dt(
-        year=date_from_query[0],
-        month=date_from_query[1],
-        day=date_from_query[2],
-        tzinfo=timezone.get_current_timezone(),
-    ).date()
-    weathers = place.weathers.filter(date__date=date)
+    weathers = get_list_or_404(place.weathers, date__date=date)
     serializer = WeatherSerializer(weathers, many=True)
     file_name = f'weather_at_{place_name}-{date}.xlsx'
     byte_data = BytesIO()

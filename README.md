@@ -35,7 +35,6 @@ python .\django_test\manage.py createsuperuser
 ### TODO:
 - easy_thumbnails / https://github.com/dessibelle/sorl-thumbnail-serializer-field
 - импорт мест из xlsx
-- экспорт погоды в xlsx
 - логины и пермишены
 - readme
 - docker
