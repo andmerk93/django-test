@@ -25,7 +25,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 from core.views import (
-    PostViewSet, PlaceViewSet, import_weather, export_weather, test_file
+    PostViewSet, PlaceViewSet, import_weather, export_weather
 )
 
 router = DefaultRouter()
@@ -38,7 +38,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/weather/current/<place_name>/', import_weather),
     path('api/weather/export/<place_name>/', export_weather),
-    path('api/test-file/', test_file),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # noqa
     path('token/', obtain_auth_token),
     path('summernote/', include('django_summernote.urls')),

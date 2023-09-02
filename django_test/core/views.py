@@ -1,7 +1,5 @@
 from io import BytesIO
 from datetime import datetime as dt
-from random import randint, sample
-from string import ascii_letters, digits
 
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -20,6 +18,8 @@ import xlsxwriter
 
 from .models import Post, Place
 from .serializers import PostSerializer, PlaceSerializer, WeatherSerializer
+
+MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 
 class PostViewSet(ModelViewSet):
@@ -80,38 +80,16 @@ def export_weather(request, place_name):
     ).date()
     weathers = place.weathers.filter(date__date=date)
     serializer = WeatherSerializer(weathers, many=True)
-    return Response(serializer.data)
-
-
-@api_view()
-def test_file(request):
-    CHARS = ascii_letters + digits
-    MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    now = dt.utcnow()
-    date = now.strftime('%Y%m%d')
-    time = now.strftime('%H:%M:%S')
-    random_digit = randint(0, 1000)
-    random_string = ''.join(sample(CHARS, randint(0, 12)))
-    cells_dict = {
-        'A1': 'date',
-        'A2': date,
-        'B1': 'time',
-        'B2': time,
-        'C1': 'random_digit',
-        'C2': random_digit,
-        'D1': 'random_string',
-        'D2': random_string,
-    }
-    file_name = f'file_generated_at_{date}.xlsx'
-    data = BytesIO()
-    workbook = xlsxwriter.Workbook(data, {'in_memory': True})
-    worksheet = workbook.add_worksheet()
-    for i in cells_dict.items():
-        worksheet.write(*i)
-    workbook.close()
-    data.seek(0)
+    file_name = f'weather_at_{place_name}-{date}.xlsx'
+    byte_data = BytesIO()
+    with xlsxwriter.Workbook(byte_data, {'in_memory': True}) as workbook:
+        worksheet = workbook.add_worksheet()
+        worksheet.write_row(0, 0, serializer.data[0].keys())
+        for num, data in enumerate(serializer.data, 1):
+            worksheet.write_row(num, 0, data.values())
+    byte_data.seek(0)
     return StreamingHttpResponse(
-        streaming_content=data,
+        streaming_content=byte_data,
         headers={
             'Content-Disposition': f'attachment; filename="{file_name}"',
         },
