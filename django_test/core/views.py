@@ -1,5 +1,9 @@
+from io import BytesIO
 from datetime import datetime as dt
+from random import randint, sample
+from string import ascii_letters, digits
 
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils import timezone
@@ -12,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from pyowm import OWM
+import xlsxwriter
 
 from .models import Post, Place
 from .serializers import PostSerializer, PlaceSerializer, WeatherSerializer
@@ -27,7 +32,7 @@ class PlaceViewSet(ModelViewSet):
     serializer_class = PlaceSerializer
 
 
-@api_view(['GET'])
+@api_view()
 def import_weather(request, place_name):
     place = get_object_or_404(Place, title=place_name)
     weather = OWM(settings.OWM_API_KEY).weather_manager().weather_at_coords(
@@ -57,7 +62,7 @@ def import_weather(request, place_name):
     )
 
 
-@api_view(['GET'])
+@api_view()
 def export_weather(request, place_name):
     date_from_query = request.query_params.get('date')
     if not date_from_query:
@@ -76,3 +81,39 @@ def export_weather(request, place_name):
     weathers = place.weathers.filter(date__date=date)
     serializer = WeatherSerializer(weathers, many=True)
     return Response(serializer.data)
+
+
+@api_view()
+def test_file(request):
+    CHARS = ascii_letters + digits
+    MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    now = dt.utcnow()
+    date = now.strftime('%Y%m%d')
+    time = now.strftime('%H:%M:%S')
+    random_digit = randint(0, 1000)
+    random_string = ''.join(sample(CHARS, randint(0, 12)))
+    cells_dict = {
+        'A1': 'date',
+        'A2': date,
+        'B1': 'time',
+        'B2': time,
+        'C1': 'random_digit',
+        'C2': random_digit,
+        'D1': 'random_string',
+        'D2': random_string,
+    }
+    file_name = f'file_generated_at_{date}.xlsx'
+    data = BytesIO()
+    workbook = xlsxwriter.Workbook(data, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+    for i in cells_dict.items():
+        worksheet.write(*i)
+    workbook.close()
+    data.seek(0)
+    return StreamingHttpResponse(
+        streaming_content=data,
+        headers={
+            'Content-Disposition': f'attachment; filename="{file_name}"',
+        },
+        content_type=MIME,
+    )
