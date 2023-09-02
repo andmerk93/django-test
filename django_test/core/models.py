@@ -31,7 +31,7 @@ class Post(models.Model):
 
 
 class Place(models.Model):
-    title = models.CharField('Название', max_length=50)
+    title = models.CharField('Название', max_length=50, unique=True)
     point = LatLongField('Гео-координаты', )
     rating = models.PositiveSmallIntegerField(
         'Рейтинг',
@@ -70,7 +70,7 @@ class Weather(models.Model):
             MaxValueValidator(900),
         ]
     )
-    wind_direction = models.CharField('Направление ветра', max_length=50)
+    wind_direction = models.PositiveSmallIntegerField('Направление ветра')
     wind_speed = models.FloatField(
         'Скорость ветра, м/с',
         validators=[

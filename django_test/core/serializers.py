@@ -11,10 +11,32 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PlaceSerializer(serializers.ModelSerializer):
+    longitude = serializers.FloatField()
+    latitude = serializers.FloatField()
+    author = serializers.CharField(read_only=True)
 
     class Meta:
         model = Place
-        fields = '__all__'
+        fields = ('id', 'title', 'longitude', 'latitude', 'rating', 'author')
+
+    def to_representation(self, instance):
+        data = model_to_dict(instance, exclude=['point', 'author'])
+        data['author'] = instance.author.username
+        point = str(instance.point).split(';')
+        data['latitude'] = float(point[0])
+        data['longitude'] = float(point[1])
+        return data
+
+    def create(self, validated_data):
+        latitude = validated_data.pop('latitude')
+        longitude = validated_data.pop('longitude')
+        author = self.context['request'].user
+        place = Place.objects.create(
+            **validated_data,
+            author=author,
+            point=f'{latitude};{longitude}'
+        )
+        return place
 
 
 class WeatherSerializer(serializers.ModelSerializer):

@@ -7,8 +7,10 @@ django-startapi==0.0.2.dev2
 django-summernote==0.8.20.0
 django-treasuremap==0.3.4
 djangorestframework==3.14.0
+et-xmlfile==1.1.0
 geojson==2.5.0
 idna==3.4
+openpyxl==3.1.2
 Pillow==10.0.0
 pyowm==3.3.0
 PySocks==1.7.1

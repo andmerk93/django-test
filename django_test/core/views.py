@@ -1,19 +1,23 @@
 from io import BytesIO
 from datetime import datetime as dt
+from itertools import islice
 
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
 from django.utils import timezone
-# from django.forms.models import model_to_dict
 
 from rest_framework.viewsets import ModelViewSet
-# from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (
+    api_view, permission_classes, parser_classes
+)
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework import status
 
 from pyowm import OWM
+from openpyxl import load_workbook
 import xlsxwriter
 
 from .models import Post, Place
@@ -33,6 +37,7 @@ class PlaceViewSet(ModelViewSet):
 
 
 @api_view()
+@permission_classes([IsAuthenticated])
 def import_weather(request, place_name):
     place = get_object_or_404(Place, title=place_name)
     weather = OWM(settings.OWM_API_KEY).weather_manager().weather_at_coords(
@@ -62,6 +67,7 @@ def import_weather(request, place_name):
 
 
 @api_view()
+@permission_classes([IsAuthenticated])
 def export_weather(request, place_name):
     date_from_query = request.query_params.get('date')
     if not date_from_query:
@@ -99,4 +105,29 @@ def export_weather(request, place_name):
             'Content-Disposition': f'attachment; filename="{file_name}"',
         },
         content_type=MIME,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([FileUploadParser])
+def import_places(request):
+    file_obj = request.data['file']
+    wb = load_workbook(filename=file_obj, read_only=True)
+    excel_headers = next(wb.active.values)
+    results = [
+        dict(zip(excel_headers, row))
+        for row in islice(wb.active.values, 1, None)
+    ]
+    serializer = PlaceSerializer(
+        data=results,
+        context=dict(request=request),
+        many=True,
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(
+        serializer.errors,
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
