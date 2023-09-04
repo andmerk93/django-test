@@ -1,9 +1,18 @@
 from django.forms.models import model_to_dict
+
 from rest_framework import serializers
+from sorl_thumbnail_serializer.fields import HyperlinkedSorlImageField
+
 from .models import Post, Place, Weather
 
 
 class PostSerializer(serializers.ModelSerializer):
+    thumbnail = HyperlinkedSorlImageField(
+        '200x200',
+        source='image',
+        read_only=True,
+    )
+    author = serializers.CharField(read_only=True)
 
     class Meta:
         model = Post

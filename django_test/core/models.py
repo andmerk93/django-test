@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from sorl.thumbnail import ImageField
+
 from treasuremap.fields import LatLongField
 
 User = get_user_model()
@@ -9,7 +11,7 @@ User = get_user_model()
 
 class Post(models.Model):
     title = models.CharField('Заголовок', max_length=50)
-    image = models.ImageField(
+    image = ImageField(
         'Картинка',
         upload_to='img/',
         null=True,

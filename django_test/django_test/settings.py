@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'treasuremap',
     'django_summernote',
+    'sorl.thumbnail',
+    'sorl_thumbnail_serializer',
     'core.apps.CoreConfig',
 ]
 
