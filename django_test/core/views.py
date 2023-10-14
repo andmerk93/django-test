@@ -57,14 +57,6 @@ def import_weather(place_name, author_id=settings.CELERY_USER_ID):
     return WeatherSerializer(data=data)
 
 
-@api_view()
-@permission_classes([IsAuthenticated])
-def import_weather_manually(request, place_name):
-    author_id = request.user.id
-    serializer = import_weather(place_name, author_id)
-    return serializer_saver(serializer)
-
-
 def serializer_saver(serializer):
     if serializer.is_valid():
         serializer.save()
@@ -73,6 +65,14 @@ def serializer_saver(serializer):
         serializer.errors,
         status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
+
+
+@api_view()
+@permission_classes([IsAuthenticated])
+def import_weather_manually(request, place_name):
+    author_id = request.user.id
+    serializer = import_weather(place_name, author_id)
+    return serializer_saver(serializer)
 
 
 @api_view()
