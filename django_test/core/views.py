@@ -36,9 +36,7 @@ class PlaceViewSet(ModelViewSet):
     serializer_class = PlaceSerializer
 
 
-@api_view()
-@permission_classes([IsAuthenticated])
-def import_weather(request, place_name):
+def import_weather(place_name, author_id=settings.CELERY_USER_ID):
     place = get_object_or_404(Place, title=place_name)
     weather = OWM(settings.OWM_API_KEY).weather_manager().weather_at_coords(
         lat=float(place.point.latitude),
@@ -54,9 +52,16 @@ def import_weather(request, place_name):
         wind_direction=weather.wind().get('deg'),  # degrees
         wind_speed=weather.wind().get('speed'),    # m / s
         place=place.id,
-        author=request.user.id,
+        author=author_id,
     )
-    serializer = WeatherSerializer(data=data)
+    return WeatherSerializer(data=data)
+
+
+@api_view()
+@permission_classes([IsAuthenticated])
+def import_weather_manually(request, place_name):
+    author_id = request.user.id
+    serializer = import_weather(place_name, author_id)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

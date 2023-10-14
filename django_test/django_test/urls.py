@@ -25,7 +25,11 @@ from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 from core.views import (
-    PostViewSet, PlaceViewSet, import_weather, export_weather, import_places
+    PostViewSet,
+    PlaceViewSet,
+    import_weather_manually,
+    export_weather,
+    import_places
 )
 
 router = DefaultRouter()
@@ -35,7 +39,7 @@ router.register(r"place", PlaceViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/weather/current/<place_name>/', import_weather),
+    path('api/weather/current/<place_name>/', import_weather_manually),
     path('api/weather/export/<place_name>/', export_weather),
     path('api/place/import/', import_places),
     path('api/', include(router.urls)),

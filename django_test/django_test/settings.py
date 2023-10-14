@@ -176,3 +176,5 @@ SUMMERNOTE_CONFIG = dict(
 )
 
 OWM_API_KEY = os.getenv('OWM_API_KEY')
+
+CELERY_USER_ID = 1
