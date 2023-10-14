@@ -62,6 +62,10 @@ def import_weather(place_name, author_id=settings.CELERY_USER_ID):
 def import_weather_manually(request, place_name):
     author_id = request.user.id
     serializer = import_weather(place_name, author_id)
+    return serializer_saver(serializer)
+
+
+def serializer_saver(serializer):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -129,10 +133,4 @@ def import_places(request):
         context=dict(request=request),
         many=True,
     )
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(
-        serializer.errors,
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
+    return serializer_saver(serializer)
