@@ -96,6 +96,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -145,3 +146,10 @@ CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_time_out": 3600}
 CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 CELERY_USER_ID = 1
+
+EMAIL_HOST = os.getenv("EMAIL_HOST", default="localhost")
+EMAIL_PORT = os.getenv("EMAIL_PORT", default="25")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="user")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", default="pass")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", default="from@example.com") # noqa
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", default="django.core.mail.backends.dummy.EmailBackend") # noqa

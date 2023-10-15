@@ -12,8 +12,13 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = dict(
     import_place_beat=dict(
         task='core.tasks.import_place_by_task',
-        schedule=timedelta(seconds=10),
+        schedule=timedelta(hours=1),
 #        schedule=crontab(minute='*/1'),
         args=('krai', 1)
     ),
+    send_mails_beat=dict(
+        task='core.tasks.send_mail_by_task',
+        schedule=timedelta(seconds=10),
+        args=((['one@mail.ru', 'two@mail.ru',],))
+    )
 )
