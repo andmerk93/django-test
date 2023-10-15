@@ -153,3 +153,12 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="user")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", default="pass")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", default="from@example.com") # noqa
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", default="django.core.mail.backends.dummy.EmailBackend") # noqa
+
+
+WEATHER_PERIOD = 60
+WEATHER_PLACE = 'krai'
+
+MAIL_PERIOD = 60
+MAIL_SUBJECT = 'subj'
+MAIL_MESSAGE = 'msg'
+EMAILS_LIST = ['one@mail.ru', 'two@mail.ru']
