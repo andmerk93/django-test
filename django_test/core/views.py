@@ -36,7 +36,7 @@ class PlaceViewSet(ModelViewSet):
     serializer_class = PlaceSerializer
 
 
-def import_weather(place_name, author_id=settings.CELERY_USER_ID):
+def import_weather(place_name, author_id):
     place = get_object_or_404(Place, title=place_name)
     weather = OWM(settings.OWM_API_KEY).weather_manager().weather_at_coords(
         lat=float(place.point.latitude),

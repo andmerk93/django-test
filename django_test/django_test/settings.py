@@ -138,4 +138,10 @@ SUMMERNOTE_CONFIG = dict(
 
 OWM_API_KEY = os.getenv('OWM_API_KEY')
 
+REDIS_HOST = os.getenv("REDIS_HOST", default="redis")
+REDIS_PORT = os.getenv("REDIS_PORT", default="6379")
+
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_time_out": 3600}
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 CELERY_USER_ID = 1
