@@ -17,6 +17,8 @@
 - Получение Сводки погоды в Примечательном месте (GET-запрос на эндпоинт, `pyowm`, нужен API-токен)
 - Просмотр Сводки погоды в админке с фильтром по дате снятия показаний
 - Экспорт Сводки погоды в xlsx-файл с фильтром по Примечательному месту и дате снятия показаний (GET-запрос + query-параметры на эндпоинт, `xlsxWriter`)
+- Возможность выполнения периодических задач (`celery`)
+- Работает в `Docker`-контейнерах и в `venv`
 
 
 ## Технические подробности
@@ -114,9 +116,42 @@ Content-Disposition: attachment; filename=import.xlsx
 - openpyxl 3.1.2
 - pyowm 3.3.0
 - python-dotenv 1.0.0
+- celery 5.3.4
+- psycopg2-binary 2.9.9
 - и их зависимости (описано в requirements.txt)
 
-### Установка и запуск
+### Запуск в Docker Compose
+
+В корневой директории нужно создать файл `.env` с переменными окружения для работы 
+по примеру файла `.env.sample`
+
+Затем, запустить приложение в Docker-контейнерах:
+```
+docker compose up -d
+```
+
+Выполнить миграции в приложении Django
+```
+docker compose exec web python manage.py migrate
+```
+
+Создать суперпользователя для входа в админку
+```
+docker exec web python manage.py createsuperuser
+
+Username (leave blank to use 'user'): # Придумайте логин (например, admin)
+Email address:                        # укажите почту, опционально
+Password:                             # придумайте пароль
+Password (again):                     # повторите пароль
+Superuser created successfully.
+```
+
+Админка будет доступна по http://localhost/admin/
+
+Flower будет доступен по http://localhost/flower/
+
+
+### Установка и запуск в виртуальном окружении
 
 На машине должен быть установлен Python актуальной версии (тестировалось на 3.11).
 
@@ -138,17 +173,17 @@ venv\Scripts\activate
 ``` 
 С запущенным виртуальным окружением нужно выполнить установку требуемых компонентов
 ```
-pip install -r requirements.txt
+pip install -r ./django_test/requirements.txt
 ```
 
-
-Для запуска нужно создать в корневой директории `.env` вида
+Для запуска нужно создать в корневой директории файл `.env` с переменными окружения для работы 
+по примеру файла `.env.sample`
 
 ```
 SECRET_KEY="django-insecure-secret-key"
 OWM_API_KEY=API10005000500205
 DJANGO_DEBUG=True
-DB_ENGINE=движок БД, если DJANGO_DEBUG=False
+DB_ENGINE=движок БД, если DJANGO_DEBUG не указан
 DB_NAME=имя инстанса БД
 DB_USER=юзер БД
 DB_PASSWORD=пароль
@@ -156,24 +191,45 @@ DB_HOST=адрес хоста
 DB_PORT=порт
 ```
 
-Затем, выполнить миграции (из виртуального окружения)
+Затем, перейти в директорию `django_test`, дальнейшие действия выполнять отсюда
 ```
-python .\django_test\manage.py migrate
+cd .\django_test\
+```
+
+Выполнить миграции (из виртуального окружения)
+```
+python .\manage.py migrate
 ```
 И запустить проект
 ```
-python .\django_test\manage.py runserver 80
+python .\manage.py runserver 80
 ```
-
 
 Тестовый сервер поднимется и будет доступен по http://localhost/
 
 
 Для создания суперюзера нужно выполнить команду (из вирт. окружения) и следовать инструкциям
 ```
-python .\django_test\manage.py createsuperuser
+python .\manage.py createsuperuser
+```
+
+Для работы `celery` нужно запустить базу данных `Redis` в контйенере:
+```
+docker run -d -p 6379:6379 redis
+```
+
+Подключить обрабочик задач:
+```
+celery -A django_test worker --loglevel=info
+```
+
+Подключить планировщик периодических задач:
+```
+celery -A django_test beat --loglevel=info
 ```
 
 
 ### TODO:
-- Docker + Compose
+- django-celery-beat
+- auto swagger
+- proxy для flower
