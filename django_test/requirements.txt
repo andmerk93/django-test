@@ -11,6 +11,8 @@ click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.3.0
 Django==4.2.4
+django-constance==3.1.0
+django-picklefield==3.1
 django-summernote==0.8.20.0
 django-treasuremap==0.3.4
 djangorestframework==3.14.0

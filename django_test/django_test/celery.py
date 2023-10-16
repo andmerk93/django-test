@@ -1,10 +1,9 @@
 from datetime import timedelta
 import os
 
-from django.conf import settings
-
 from celery import Celery
 
+from constance import config as settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_test.settings")
 app = Celery("django_test")

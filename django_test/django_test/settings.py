@@ -1,16 +1,15 @@
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DJANGO_DEBUG')
-
-if DEBUG:
-    from dotenv import load_dotenv
-    load_dotenv()
 
 ALLOWED_HOSTS = ['*']
 
@@ -27,6 +26,7 @@ INSTALLED_APPS = [
     'django_summernote',
     'sorl.thumbnail',
     'sorl_thumbnail_serializer',
+    'constance',
     'core.apps.CoreConfig',
 ]
 
@@ -147,7 +147,6 @@ REDIS_PORT = os.getenv("REDIS_PORT", default="6379")
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_time_out": 3600}
 CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_USER_ID = 1
 
 EMAIL_HOST = os.getenv("EMAIL_HOST", default="localhost")
 EMAIL_PORT = os.getenv("EMAIL_PORT", default="25")
@@ -156,11 +155,29 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", default="pass")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", default="from@example.com") # noqa
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", default="django.core.mail.backends.dummy.EmailBackend") # noqa
 
+CONSTANCE_REDIS_CONNECTION = dict(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=0,
+)
 
-WEATHER_PERIOD = 60
-WEATHER_PLACE = 'krai'
+CONSTANCE_CONFIG = dict(
+    WEATHER_PERIOD=(60, 'Период сбора информации о погоде, мин', int),
+    WEATHER_PLACE=('krai', 'Место, title', str),
+    CELERY_USER_ID=(1, 'id пользователя celery, для БД', int),
+    MAIL_PERIOD=(60, 'Период рассылки писем, мин', int),
+    MAIL_SUBJECT=('subj', 'Тема письма', str),
+    MAIL_MESSAGE=('msg', 'Содержание письма', str),
+    EMAILS_LIST=(
+        'one@mail.ru two@mail.ru', 'Список адресатов, email, через пробел', str
+    ),
+)
 
-MAIL_PERIOD = 60
-MAIL_SUBJECT = 'subj'
-MAIL_MESSAGE = 'msg'
-EMAILS_LIST = ['one@mail.ru', 'two@mail.ru']
+CONSTANCE_CONFIG_FIELDSETS = dict(
+    Weather=dict(
+        fields=('WEATHER_PERIOD', 'WEATHER_PLACE', 'CELERY_USER_ID'),
+    ),
+    Mail=dict(
+        fields=('MAIL_PERIOD', 'MAIL_SUBJECT', 'MAIL_MESSAGE', 'EMAILS_LIST'),
+    ),
+)

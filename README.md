@@ -112,6 +112,7 @@ Content-Disposition: attachment; filename=import.xlsx
 - sorl-thumbnail-serializer-field 0.2.1
 - django-treasuremap 0.3.4
 - django-summernote 0.8.20.0
+- django-constance 3.1.0
 - XlsxWriter 3.1.2
 - openpyxl 3.1.2
 - pyowm 3.3.0

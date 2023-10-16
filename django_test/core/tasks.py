@@ -26,5 +26,5 @@ def send_mail_by_task(
         subject,
         message,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=emails,
+        recipient_list=emails.split(),
     )
