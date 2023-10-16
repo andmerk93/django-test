@@ -1,0 +1,40 @@
+name: flake8 workflow
+
+on: [push]
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+  
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version:  ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: | 
+        pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
+
+    - name: Test with flake8
+      run: |
+        echo '[flake8]' > setup.cfg
+        echo 'ignore =' >> setup.cfg
+        echo '    W503' >> setup.cfg
+        echo '    I001' >> setup.cfg
+        echo '    I004' >> setup.cfg
+        echo '    I005' >> setup.cfg
+        echo '    R504' >> setup.cfg
+        echo '    R505' >> setup.cfg
+        echo 'exclude =' >> setup.cfg
+        echo '    tests/,' >> setup.cfg
+        echo '    */migrations/,' >> setup.cfg
+        echo '    venv/,' >> setup.cfg
+        echo '    env/' >> setup.cfg
+        echo 'per-file-ignores =' >> setup.cfg
+        echo '    */settings.py:E501' >> setup.cfg
+        echo 'max-complexity = 10' >> setup.cfg
+        python -m flake8
