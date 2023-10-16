@@ -43,7 +43,7 @@ def import_weather(place_name, author_id):
         lon=float(place.point.longitude),
     ).weather
     # longitude latitude
-    hhHg_pressure = weather.barometric_pressure().get('press')*0.750064
+    hhHg_pressure = weather.barometric_pressure().get('press') * 0.750064  # noqa
     # 1 hPa = 0.750064 hhHg
     data = dict(
         temper=weather.temperature('celsius').get('temp'),
