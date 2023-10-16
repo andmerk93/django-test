@@ -36,16 +36,14 @@ class PlaceViewSet(ModelViewSet):
     serializer_class = PlaceSerializer
 
 
-@api_view()
-@permission_classes([IsAuthenticated])
-def import_weather(request, place_name):
+def import_weather(place_name, author_id):
     place = get_object_or_404(Place, title=place_name)
     weather = OWM(settings.OWM_API_KEY).weather_manager().weather_at_coords(
         lat=float(place.point.latitude),
         lon=float(place.point.longitude),
     ).weather
     # longitude latitude
-    hhHg_pressure = weather.barometric_pressure().get('press')*0.750064
+    hhHg_pressure = weather.barometric_pressure().get('press') * 0.750064  # noqa
     # 1 hPa = 0.750064 hhHg
     data = dict(
         temper=weather.temperature('celsius').get('temp'),
@@ -54,9 +52,12 @@ def import_weather(request, place_name):
         wind_direction=weather.wind().get('deg'),  # degrees
         wind_speed=weather.wind().get('speed'),    # m / s
         place=place.id,
-        author=request.user.id,
+        author=author_id,
     )
-    serializer = WeatherSerializer(data=data)
+    return WeatherSerializer(data=data)
+
+
+def serializer_saver(serializer):
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -64,6 +65,14 @@ def import_weather(request, place_name):
         serializer.errors,
         status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
+
+
+@api_view()
+@permission_classes([IsAuthenticated])
+def import_weather_manually(request, place_name):
+    author_id = request.user.id
+    serializer = import_weather(place_name, author_id)
+    return serializer_saver(serializer)
 
 
 @api_view()
@@ -124,10 +133,4 @@ def import_places(request):
         context=dict(request=request),
         many=True,
     )
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(
-        serializer.errors,
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
+    return serializer_saver(serializer)
