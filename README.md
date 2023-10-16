@@ -146,6 +146,11 @@ Password (again):                     # повторите пароль
 Superuser created successfully.
 ```
 
+Сохранить статичные файлы
+```
+docker compose exec web python manage.py collectstatic
+```
+
 Админка будет доступна по http://localhost/admin/
 
 Flower будет доступен по http://localhost/flower/
